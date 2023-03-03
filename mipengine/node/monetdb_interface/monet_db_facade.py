@@ -117,19 +117,19 @@ def _execute_queries_with_connection_handling(func, *args, **kwargs):
     On both cases we try for x amount of times to recover the connection with the database.
     """
     conn = None
-    for tries in range(CONN_RECOVERY_MAX_ATTEMPTS):
+    for tries in range(CONN_RECOVERY_MAX_ATTEMPTS * 4):
 
         try:
             conn = _MonetDBConnectionPool().get_connection()
             result = func(*args, **kwargs, conn=conn)
             _MonetDBConnectionPool().release_connection(conn)
             return result
-        except (BrokenPipeError, OSError) as exc:
+        except (BrokenPipeError, OSError, pymonetdb.exceptions.Error) as exc:
             logger = logging.get_logger()
             logger.warning(
                 f"Trying to recover the connection with the database. Exception type: '{type(exc)}', exc: '{exc}'"
             )
-            sleep(tries * CONN_RECOVERY_ERROR_RETRY)
+            sleep(1)
         except Exception as exc:
             if conn:
                 conn.rollback()
