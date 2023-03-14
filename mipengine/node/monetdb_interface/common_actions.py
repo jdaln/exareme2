@@ -210,6 +210,37 @@ def get_table_data(table_name: str) -> List[ColumnData]:
     )
 
 
+@sql_injection_guard(table_name=str.isidentifier)
+def get_column_stored_table_data(table_name: str) -> Dict[str, List[Any]]:
+    """
+    Returns the data of the table in column store format, as a dict with the column names as keys.
+    """
+    schema = get_table_schema(table_name)
+    # TODO: blocked by https://team-1617704806227.atlassian.net/browse/MIP-133 .
+    # Retrieving the data should be a simple select.
+    # row_stored_data = db_execute_and_fetchall(f"SELECT * FROM {table_name}")
+
+    row_stored_data = db_execute_and_fetchall(
+        f"""
+        SELECT {table_name}.*
+        FROM {table_name}
+        INNER JOIN tables ON tables.name = '{table_name}'
+        WHERE tables.system=false
+        """
+    )
+
+    column_stored_data = list(zip(*row_stored_data))
+    # In case there are no rows in the table, the `column_stored_data` will be an empty list.
+    # The `column_stored_data` needs to have a value for each column, so we fill it with empty lists.
+    if not column_stored_data:
+        column_stored_data = [[] for _ in schema.columns]
+
+    return {
+        column.name: col_data
+        for column, col_data in zip(schema.columns, column_stored_data)
+    }
+
+
 def _convert_column_stored_data_to_column_data_objects(
     column_stored_data: List[List[Any]], schema: TableSchema
 ):

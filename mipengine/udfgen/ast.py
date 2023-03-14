@@ -3,6 +3,7 @@ from abc import ABC
 from abc import abstractmethod
 from numbers import Number
 from textwrap import indent
+from typing import Callable
 from typing import Dict
 from typing import List
 from typing import NamedTuple
@@ -63,6 +64,7 @@ class FunctionParts(NamedTuple):
     """A function's parts, used in various stages of the udf definition/query
     generation."""
 
+    func: Callable
     qualname: str
     body_statements: list
     return_names: List[str]
@@ -88,6 +90,7 @@ def breakup_function(func, funcsig) -> FunctionParts:
     logger_param_name = next(iter(logger_input_types.keys()), None)
 
     return FunctionParts(
+        func=func,
         qualname=qualname,
         body_statements=body_statements,
         return_names=return_names,

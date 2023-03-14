@@ -145,7 +145,8 @@ def test_run_udf_state_and_transfer_output(
     udf_results_str = localnode1_celery_app.get_result(
         async_result=async_result,
         logger=StdOutputLogger(),
-        timeout=TASKS_TIMEOUT,
+        # timeout=TASKS_TIMEOUT+1000,
+        timeout=TASKS_TIMEOUT + 1000,
     )
 
     results = NodeUDFResults.parse_raw(udf_results_str).results

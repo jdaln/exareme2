@@ -190,7 +190,8 @@ def _execute_queries_with_error_handling(func):
         """
 
         db_execution_dto = kwargs["db_execution_dto"]
-        idempotent_query = _create_idempotent_query(db_execution_dto.query)
+        # idempotent_query = _create_idempotent_query(db_execution_dto.query)
+        idempotent_query = db_execution_dto.query
         idempotent_db_execution_dto = _DBExecutionDTO(
             query=idempotent_query,
             parameters=db_execution_dto.parameters,
