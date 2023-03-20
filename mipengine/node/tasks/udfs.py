@@ -16,6 +16,7 @@ from mipengine.node.monetdb_interface import udfs
 from mipengine.node.monetdb_interface.common_actions import create_table_name
 from mipengine.node.monetdb_interface.common_actions import get_column_stored_table_data
 from mipengine.node.monetdb_interface.common_actions import get_table_data
+from mipengine.node.monetdb_interface.common_actions import get_table_data_to_df
 from mipengine.node.monetdb_interface.common_actions import get_table_type
 from mipengine.node.monetdb_interface.guard import is_valid_request_id
 from mipengine.node.monetdb_interface.guard import output_schema_validator
@@ -490,9 +491,8 @@ def _convert_node_udf_args_to_values(
             raise ValueError(f"Argument '{name}' was not provided. Args: '{args}'.")
         arg = args.args[name]
         if isinstance(type, RelationType):
-            data = get_column_stored_table_data(arg.value.name)
+            value = get_table_data_to_df(arg.value.name)
             row_id = "row_id"
-            value = pd.DataFrame(data, copy=False)
             if row_id in value.columns:
                 value = value.set_index(row_id)
         elif isinstance(type, TransferType):

@@ -3,6 +3,9 @@ from typing import Any
 from typing import Dict
 from typing import List
 
+import pandas as pd
+import pymonetdb
+
 from mipengine import DType
 from mipengine.exceptions import TablesNotFound
 from mipengine.node.monetdb_interface.guard import is_datamodel
@@ -239,6 +242,27 @@ def get_column_stored_table_data(table_name: str) -> Dict[str, List[Any]]:
         column.name: col_data
         for column, col_data in zip(schema.columns, column_stored_data)
     }
+
+
+@sql_injection_guard(table_name=str.isidentifier)
+def get_table_data_to_df(table_name: str):
+    schema = get_table_schema(table_name)
+
+    from mipengine.node import config as node_config
+
+    conn = pymonetdb.connect(
+        hostname=node_config.monetdb.ip,
+        port=node_config.monetdb.port,
+        username=node_config.monetdb.username,
+        password=node_config.monetdb.password,
+        database=node_config.monetdb.database,
+    )
+
+    sql_query = pd.read_sql_query(
+        f"""SELECT {','.join(schema.column_names)} FROM {table_name};""", conn
+    )
+    df = pd.DataFrame(sql_query, columns=schema.column_names)
+    return df
 
 
 def _convert_column_stored_data_to_column_data_objects(
