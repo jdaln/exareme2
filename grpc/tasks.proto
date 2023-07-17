@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option objc_class_prefix = "RTG";
+
+package node_tasks;
+
+service Tables {
+  rpc GetTable(Name) returns (Table) {}
+}
+
+
+message Name {
+  string name = 1;
+}
+
+message Table {
+  string name = 1;
+  int32 value = 2;
+}
