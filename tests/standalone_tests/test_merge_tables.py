@@ -9,7 +9,7 @@ from exareme2.node_tasks_DTOs import ColumnInfo
 from exareme2.node_tasks_DTOs import TableInfo
 from exareme2.node_tasks_DTOs import TableSchema
 from exareme2.node_tasks_DTOs import TableType
-from tests.standalone_tests.conftest import COMMON_IP
+from tests.standalone_tests.conftest import COMMON_IP, table_exists
 from tests.standalone_tests.conftest import MONETDB_LOCALNODE1_PORT
 from tests.standalone_tests.conftest import MONETDB_LOCALNODE2_PORT
 from tests.standalone_tests.conftest import TASKS_TIMEOUT
@@ -21,7 +21,6 @@ from tests.standalone_tests.std_output_logger import StdOutputLogger
 
 create_remote_task_signature = get_celery_task_signature("create_remote_table")
 create_merge_table_task_signature = get_celery_task_signature("create_merge_table")
-get_merge_tables_task_signature = get_celery_task_signature("get_merge_tables")
 
 
 @pytest.fixture(autouse=True)
@@ -101,19 +100,7 @@ def test_create_and_get_merge_table(
             timeout=TASKS_TIMEOUT,
         )
     )
-
-    async_result = localnode1_celery_app.queue_task(
-        task_signature=get_merge_tables_task_signature,
-        logger=StdOutputLogger(),
-        request_id=request_id,
-        context_id=context_id,
-    )
-    merge_tables = localnode1_celery_app.get_result(
-        async_result=async_result,
-        logger=StdOutputLogger(),
-        timeout=TASKS_TIMEOUT,
-    )
-    assert merge_table_info.name in merge_tables
+    assert table_exists(localnode1_db_cursor, merge_table_info.name)
 
 
 @pytest.mark.slow

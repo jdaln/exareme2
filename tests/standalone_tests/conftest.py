@@ -592,12 +592,26 @@ def insert_data_to_db(
     db_cursor.execute(sql_clause, list(chain(*table_values)))
 
 
+def get_tables(db_cursor):
+    tables = db_cursor.execute("""
+        SELECT name
+        FROM TABLES
+        WHERE SYSTEM = false;
+        """).fetchall()
+    return [name for name, *_ in tables]
+
+def table_exists(db_cursor, table_name: str):
+    return table_name in get_tables(db_cursor)
+
+
 def get_table_data_from_db(
     db_cursor,
     table_name: str,
 ):
     return db_cursor.execute(f"SELECT * FROM {table_name};").fetchall()
 
+def drop_table(cursor, table_name):
+    cursor.execute(f"DROP TABLE {table_name}")
 
 def _clean_db(cursor):
     class TableType(enum.Enum):

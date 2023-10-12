@@ -12,7 +12,7 @@ from exareme2.node_tasks_DTOs import ColumnInfo
 from exareme2.node_tasks_DTOs import TableInfo
 from exareme2.node_tasks_DTOs import TableSchema
 from exareme2.node_tasks_DTOs import TableType
-from tests.standalone_tests.conftest import ALGORITHMS_URL
+from tests.standalone_tests.conftest import ALGORITHMS_URL, table_exists
 from tests.standalone_tests.conftest import create_table_in_db
 from tests.standalone_tests.conftest import get_table_data_from_db
 from tests.standalone_tests.conftest import insert_data_to_db
@@ -24,7 +24,6 @@ create_view_task_signature = get_celery_task_signature("create_view")
 create_data_model_views_task_signature = get_celery_task_signature(
     "create_data_model_views"
 )
-get_views_task_signature = get_celery_task_signature("get_views")
 
 
 @pytest.fixture
@@ -233,16 +232,7 @@ def test_data_model_view(
             async_result=async_result, logger=StdOutputLogger(), timeout=TASKS_TIMEOUT
         )
     ]
-    async_result = localnode1_celery_app.queue_task(
-        task_signature=get_views_task_signature,
-        logger=StdOutputLogger(),
-        request_id=request_id,
-        context_id=context_id,
-    )
-    views = localnode1_celery_app.get_result(
-        async_result=async_result, logger=StdOutputLogger(), timeout=TASKS_TIMEOUT
-    )
-    assert view_info.name in views
+    assert table_exists(localnode1_db_cursor, view_info.name)
 
     schema = TableSchema(
         columns=[
