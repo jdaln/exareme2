@@ -19,15 +19,11 @@ from exareme2.node_tasks_DTOs import TableSchema
 from exareme2.node_tasks_DTOs import TableType
 
 TASK_SIGNATURES: Final = {
-    "get_tables": "exareme2.node.tasks.tables.get_tables",
     "get_table_schema": "exareme2.node.tasks.common.get_table_schema",
     "get_table_data": "exareme2.node.tasks.common.get_table_data",
     "create_table": "exareme2.node.tasks.tables.create_table",
-    "get_views": "exareme2.node.tasks.views.get_views",
     "create_data_model_views": "exareme2.node.tasks.views.create_data_model_views",
-    "get_remote_tables": "exareme2.node.tasks.remote_tables.get_remote_tables",
     "create_remote_table": "exareme2.node.tasks.remote_tables.create_remote_table",
-    "get_merge_tables": "exareme2.node.tasks.merge_tables.get_merge_tables",
     "create_merge_table": "exareme2.node.tasks.merge_tables.create_merge_table",
     "run_udf": "exareme2.node.tasks.udfs.run_udf",
     "cleanup": "exareme2.node.tasks.common.cleanup",
@@ -55,10 +51,6 @@ class INodeAlgorithmTasksHandler(ABC):
 
     # TABLES functionality
     @abstractmethod
-    def get_tables(self, context_id: str) -> List[str]:
-        pass
-
-    @abstractmethod
     def get_table_data(self, table_name: str) -> TableData:
         pass
 
@@ -69,10 +61,6 @@ class INodeAlgorithmTasksHandler(ABC):
         pass
 
     # VIEWS functionality
-    @abstractmethod
-    def get_views(self, context_id: str) -> List[str]:
-        pass
-
     @abstractmethod
     def create_data_model_views(
         self,
@@ -89,10 +77,6 @@ class INodeAlgorithmTasksHandler(ABC):
 
     # MERGE TABLES functionality
     @abstractmethod
-    def get_merge_tables(self, context_id: str) -> List[str]:
-        pass
-
-    @abstractmethod
     def create_merge_table(
         self,
         context_id: str,
@@ -102,10 +86,6 @@ class INodeAlgorithmTasksHandler(ABC):
         pass
 
     # REMOTE TABLES functionality
-    @abstractmethod
-    def get_remote_tables(self, context_id: str) -> List[str]:
-        pass
-
     @abstractmethod
     def create_remote_table(
         self,
@@ -202,23 +182,6 @@ class NodeAlgorithmTasksHandler(INodeAlgorithmTasksHandler):
         return CeleryAppFactory().get_celery_app(socket_addr=self._node_queue_addr)
 
     # TABLES functionality
-    def get_tables(self, context_id: str) -> List[str]:
-        logger = ctrl_logger.get_request_logger(request_id=self._request_id)
-        celery_app = self._get_node_celery_app()
-        task_signature = TASK_SIGNATURES["get_tables"]
-        async_result = celery_app.queue_task(
-            task_signature=task_signature,
-            logger=logger,
-            request_id=self._request_id,
-            context_id=context_id,
-        )
-        result = celery_app.get_result(
-            async_result=async_result,
-            timeout=self._tasks_timeout,
-            logger=logger,
-        )
-        return list(result)
-
     def get_table_data(self, table_name: str) -> TableData:
         logger = ctrl_logger.get_request_logger(request_id=self._request_id)
         celery_app = self._get_node_celery_app()
@@ -260,22 +223,6 @@ class NodeAlgorithmTasksHandler(INodeAlgorithmTasksHandler):
         return TableInfo.parse_raw(result)
 
     # VIEWS functionality
-    def get_views(self, context_id: str) -> List[str]:
-        logger = ctrl_logger.get_request_logger(request_id=self._request_id)
-        celery_app = self._get_node_celery_app()
-        task_signature = TASK_SIGNATURES["get_views"]
-        async_result = celery_app.queue_task(
-            task_signature=task_signature,
-            logger=logger,
-            request_id=self._request_id,
-            context_id=context_id,
-        )
-        result = celery_app.get_result(
-            async_result=async_result, timeout=self._tasks_timeout, logger=logger
-        )
-
-        return result
-
     def create_data_model_views(
         self,
         context_id: str,
@@ -310,24 +257,6 @@ class NodeAlgorithmTasksHandler(INodeAlgorithmTasksHandler):
         return result
 
     # MERGE TABLES functionality
-    def get_merge_tables(self, context_id: str) -> List[str]:
-        logger = ctrl_logger.get_request_logger(request_id=self._request_id)
-        celery_app = self._get_node_celery_app()
-        task_signature = TASK_SIGNATURES["get_merge_tables"]
-        async_result = celery_app.queue_task(
-            task_signature=task_signature,
-            logger=logger,
-            request_id=self._request_id,
-            context_id=context_id,
-        )
-        result = celery_app.get_result(
-            async_result=async_result,
-            timeout=self._tasks_timeout,
-            logger=logger,
-        )
-
-        return result
-
     def create_merge_table(
         self,
         context_id: str,
@@ -354,23 +283,6 @@ class NodeAlgorithmTasksHandler(INodeAlgorithmTasksHandler):
         return TableInfo.parse_raw(result)
 
     # REMOTE TABLES functionality
-    def get_remote_tables(self, context_id: str) -> List[str]:
-        logger = ctrl_logger.get_request_logger(request_id=self._request_id)
-        celery_app = self._get_node_celery_app()
-        task_signature = TASK_SIGNATURES["get_remote_tables"]
-        async_result = celery_app.queue_task(
-            task_signature=task_signature,
-            logger=logger,
-            request_id=self._request_id,
-            context_id=context_id,
-        )
-        result = celery_app.get_result(
-            async_result=async_result,
-            timeout=self._tasks_timeout,
-            logger=logger,
-        )
-        return result
-
     def create_remote_table(
         self,
         table_name: str,

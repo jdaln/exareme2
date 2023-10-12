@@ -424,18 +424,12 @@ class DummyNodeAlgorithmTasksHandler(INodeAlgorithmTasksHandler):
     def tasks_timeout(self) -> int:
         pass
 
-    def get_tables(self, context_id: str) -> List[str]:
-        pass
-
     def get_table_data(self, table_name: str) -> TableData:
         pass
 
     def create_table(
         self, context_id: str, command_id: str, schema: TableSchema
     ) -> TableInfo:
-        pass
-
-    def get_views(self, context_id: str) -> List[str]:
         pass
 
     def create_data_model_views(
@@ -451,18 +445,12 @@ class DummyNodeAlgorithmTasksHandler(INodeAlgorithmTasksHandler):
     ) -> List[TableInfo]:
         pass
 
-    def get_merge_tables(self, context_id: str) -> List[str]:
-        pass
-
     def create_merge_table(
         self,
         context_id: str,
         command_id: str,
         table_infos: List[TableInfo],
     ) -> TableInfo:
-        pass
-
-    def get_remote_tables(self, context_id: str) -> List[str]:
         pass
 
     def create_remote_table(

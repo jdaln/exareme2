@@ -24,10 +24,6 @@ class AsyncResult:
 
 class _INode(ABC):
     @abstractmethod
-    def get_tables(self) -> List[str]:
-        pass
-
-    @abstractmethod
     def get_table_data(self, table_name: str) -> TableData:
         pass
 
@@ -36,21 +32,9 @@ class _INode(ABC):
         pass
 
     @abstractmethod
-    def get_views(self) -> List[str]:
-        pass
-
-    @abstractmethod
-    def get_merge_tables(self) -> List[str]:
-        pass
-
-    @abstractmethod
     def create_merge_table(
         self, command_id: str, table_infos: List[TableInfo]
     ) -> TableInfo:
-        pass
-
-    @abstractmethod
-    def get_remote_tables(self) -> List[str]:
         pass
 
     @abstractmethod
@@ -98,11 +82,6 @@ class _Node(_INode, ABC):
         return self._node_tasks_handler.node_data_address
 
     # TABLES functionality
-    def get_tables(self) -> List[str]:
-        return self._node_tasks_handler.get_tables(
-            context_id=self.context_id,
-        )
-
     def get_table_data(self, table_name: str) -> TableData:
         return self._node_tasks_handler.get_table_data(
             table_name=table_name,
@@ -115,14 +94,6 @@ class _Node(_INode, ABC):
             schema=schema,
         )
 
-    # VIEWS functionality
-    def get_views(self) -> List[str]:
-        return self._node_tasks_handler.get_views(context_id=self.context_id)
-
-    # MERGE TABLES functionality
-    def get_merge_tables(self) -> List[str]:
-        return self._node_tasks_handler.get_merge_tables(context_id=self.context_id)
-
     def create_merge_table(
         self, command_id: str, table_infos: List[TableInfo]
     ) -> TableInfo:
@@ -133,9 +104,6 @@ class _Node(_INode, ABC):
         )
 
     # REMOTE TABLES functionality
-    def get_remote_tables(self) -> List[str]:
-        return self._node_tasks_handler.get_remote_tables(context_id=self.context_id)
-
     def create_remote_table(
         self,
         table_name: str,
