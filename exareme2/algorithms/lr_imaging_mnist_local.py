@@ -1,8 +1,8 @@
 import os
 import warnings
 
-import nibabel as nib
-import nilearn as nil
+# import nibabel as nib
+# import nilearn as nil
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -45,67 +45,81 @@ def load_and_process_images(folder, target_size):
 
 
 class LRImagingLocal:
-    def get_parameters(self, config):  # type: ignore
-        return utils.get_model_parameters(model)
+    def __init__(self, data_location):
+        self.model = None
+        self.data_location = data_location
 
-    def fit(self, parameters, config=None):  # type: ignore
+        # Define the common target size
+        target_size = (28, 28)
+
+        # Load and process both training and testing images
+        images, labels = load_and_process_images(data_location, target_size)
+
+        # Check if images were loaded successfully
+        if not images:
+            print(
+                "No training images were loaded. Check the folder path and image files."
+            )
+            exit()
+
+        # Convert images to NumPy arrays
+        images = np.array(images)
+
+        data = images.reshape(images.shape[0], -1)
+        labels_ds = np.array(labels)
+
+        # Split data into training and testing sets
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            data, labels_ds, test_size=0.2, random_state=42
+        )
+
+    def init_step(self):
+
+        # Create LogisticRegression Model
+        self.model = LogisticRegression(
+            penalty="l2",
+            max_iter=1,  # local epoch
+            warm_start=True,  # prevent refreshing weights when fitting
+        )
+        # Setting initial parameters, akin to model.compile for keras models
+        utils.set_initial_params(self.model)
+
+        params, n_obs, other_results = self.fit(self.model)
+        loss_local, n_obs_eval, accuracy, round_num = self.evaluate(params, round_num=5)
+        res_fit = {
+            "params": params,
+            "n_obs": n_obs,
+            "other_results": other_results,
+        }
+        res_eval = {
+            "loss_local": loss_local,
+            "n_obs_eval": n_obs_eval,
+            "accuracy": accuracy,
+            "round_num": round_num,
+        }
+
+        return res_fit, res_eval
+
+    def get_parameters(self, config):  # type: ignore
+        return utils.get_model_parameters(self.model)
+
+    def fit(self, model, config=None):  # type: ignore
+        parameters = [model.coef_, model.intercept_]
         utils.set_model_params(model, parameters)
         # Ignore convergence failure due to low local epochs
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            model.fit(X_train, y_train)
+            model.fit(self.X_train, self.y_train)
         print(f"Training finished for round")  # {config['server_round']}")
-        return utils.get_model_parameters(model), len(X_train), {}
+        return utils.get_model_parameters(model), len(self.X_train), {}
 
     def evaluate(self, parameters, round_num):  # type: ignore
-        utils.set_model_params(model, parameters)
-        loss = log_loss(y_test, model.predict_proba(X_test))
-        accuracy = model.score(X_test, y_test)
+        utils.set_model_params(self.model, parameters)
+        loss = log_loss(self.y_test, self.model.predict_proba(self.X_test))
+        accuracy = self.model.score(self.X_test, self.y_test)
         if round_num > 0:
             round_num -= 1
-        return loss, len(X_test), {"accuracy": accuracy}, round_num
+        return loss, len(self.X_test), {"accuracy": accuracy}, round_num
 
 
-if __name__ == "__main__":
-
-    # Define the common target size
-    target_size = (28, 28)
-
-    # Specify the paths to training and testing image folders
-    images_folder = "exareme2/imaging_data/MNIST/training"
-    # raise ValueError(images)
-
-    # Load and process both training and testing images
-    images, labels = load_and_process_images(images_folder, target_size)
-
-    # Check if images were loaded successfully
-    if not images:
-        print("No training images were loaded. Check the folder path and image files.")
-        exit()
-
-    # Convert images to NumPy arrays
-    images = np.array(images)
-
-    data = images.reshape(images.shape[0], -1)
-    labels_ds = np.array(labels)
-
-    # Split data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(
-        data, labels_ds, test_size=0.2, random_state=42
-    )
-
-    # Create LogisticRegression Model
-    model = LogisticRegression(
-        penalty="l2",
-        max_iter=1,  # local epoch
-        warm_start=True,  # prevent refreshing weights when fitting
-    )
-    # Setting initial parameters, akin to model.compile for keras models
-    utils.set_initial_params(model)
-
-    local_step = LRImagingLocal()
-    params, n_obs, other_results = local_step.fit(model)
-    loss_local, n_obs_eval, accuracy, round_num = local_step.evaluate(
-        params, round_num=5
-    )
-    raise ValueError(local_step.evaluate)
+# if __name__ == "__main__":

@@ -3,7 +3,8 @@ from typing import Dict
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 
-from exareme2.algorithms.imaging_fed_average import imaging_fed_average
+from exareme2.algorithms.imaging_fed_average import aggregate_evaluate
+from exareme2.algorithms.imaging_fed_average import aggregate_fit
 from exareme2.services import imaging_utilities as utils
 
 
@@ -33,20 +34,19 @@ def get_evaluate_fn(model: LogisticRegression):
 
 # Start Flower server for five rounds of federated learning
 class LRImagingGlobal:
-
-    if __name__ == "__main__":
-        model = LogisticRegression()
-        utils.set_initial_params(model)
-        strategy = imaging_fed_average(
-            evaluate_fn=get_evaluate_fn(model), fit_round=fit_round(server_round=5)
-        )
-
     def __init__(self):
-        self.strategy = None
+        self.model = LogisticRegression()
 
-    def set_values(self, strategy):
-        assert isinstance(strategy, object)
-        self.strategy = strategy
+    def calculate_aggregates(self, round_num, local_params):
+        parameters_aggregated, metrics_aggregated = aggregate_fit(
+            self, round_num, local_params
+        )
+        utils.set_model_params(self.model, parameters_aggregated)
 
-    def get_values(self):
-        return self.strategy
+        aggregated_model = self.model.fit(parameters_aggregated)
+        model_params = utils.get_model_parameters(aggregated_model)
+        eval_result = aggregate_fit(self, model_params, self.round_num)
+
+    def check_evaluation(self):
+        # check self.eval_result in order to proceed to next round and return result
+        pass
