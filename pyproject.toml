@@ -22,7 +22,7 @@ envtoml = "~0.1"
 requests = "~2.31"
 eventlet = "~0.33"
 patsy = "~0.5.3"
-flwr = "1.7.0"
+flwr = "1.10.0"
 psutil = "^5.9.8"
 
 [tool.poetry.dev-dependencies]
