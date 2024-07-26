@@ -540,7 +540,10 @@ class WorkerLandscapeAggregator:
         ]
 
         for dataset, dataset_location in datasets_locations.items():
-            if dataset_location.worker_id == self.get_global_worker().id:
+            if (
+                self._registries.worker_registry.global_workers
+                and dataset_location.worker_id == self.get_global_worker().id
+            ):
                 validation_datasets.append(dataset)
             else:
                 training_datasets.append(dataset)
