@@ -1,4 +1,17 @@
 apiVersion: apps/v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cleanup-file-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: ceph-corbo-rbd-hdd
+#TODO modulatize read from either the ceph or hostpath
+---
+apiVersion: v1
 kind: Deployment
 metadata:
   name: exareme2-controller-deployment
@@ -18,8 +31,8 @@ spec:
         master: "true"
       volumes:
       - name: cleanup-file
-        hostPath:
-          path: {{ .Values.controller.cleanup_file_folder }}
+        persistentVolumeClaim:
+          claimName: cleanup-file-pvc
       containers:
       - name: controller
         image: {{ .Values.exareme2_images.repository }}/exareme2_controller:{{ .Values.exareme2_images.version }}

@@ -1,3 +1,45 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+  storageClassName: ceph-corbo-cephfs
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: csv-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+  storageClassName: ceph-corbo-cephfs
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: credentials-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+  storageClassName: ceph-corbo-cephfs
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,14 +62,14 @@ spec:
         master: "true"
       volumes:
       - name: db-data
-        hostPath:
-          path: {{ .Values.db.storage_location }}
+        persistentVolumeClaim:
+          claimName: db-data-pvc
       - name: csv-data
-        hostPath:
-          path: {{ .Values.db.csvs_location }}
+        persistentVolumeClaim:
+          claimName: csv-data-pvc
       - name: credentials
-        hostPath:
-          path: {{ .Values.db.credentials_location }}
+        persistentVolumeClaim:
+          claimName: credentials-pvc
       containers:
       - name: monetdb
         image: {{ .Values.exareme2_images.repository }}/exareme2_db:{{ .Values.exareme2_images.version }}
