@@ -28,7 +28,7 @@ spec:
         app: exareme2-controller
     spec:
       nodeSelector:
-        master: "true"
+        mip-controller: "true"
       volumes:
       - name: cleanup-file
         persistentVolumeClaim:

@@ -59,7 +59,7 @@ spec:
         nodeType: globalworker
     spec:
       nodeSelector:
-        master: "true"
+        mip-globalworker: "true"
       volumes:
       - name: db-data
         persistentVolumeClaim:

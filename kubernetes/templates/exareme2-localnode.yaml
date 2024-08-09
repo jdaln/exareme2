@@ -59,7 +59,7 @@ spec:
         nodeType: localworker
     spec:
       nodeSelector:
-        worker: "true"
+        mip-worker: "true"
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
